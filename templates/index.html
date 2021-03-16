@@ -12,7 +12,7 @@
         <div class="navbar">
             <h1 class="fl">全部商品分类</h1>
             <ul class="navlist fl">
-                <li><a href="">首页</a></li>
+                <li><a href="{% url 'goods:index' %}">首页</a></li>
                 <li class="interval">|</li>
                 <li><a href="">手机生鲜</a></li>
                 <li class="interval">|</li>
@@ -54,11 +54,13 @@
                     <a href="{% url 'goods:detail' banner.sku.id %}">{{ banner.sku.name }}</a>
                     {% endfor %}
                 </div>
-                <a href="#" class="goods_more fr" id="fruit_more">查看更多 ></a>
+                <a href="{% url 'goods:list' type.id 1 %}" class="goods_more fr" id="fruit_more">查看更多 ></a>
             </div>
 
             <div class="goods_con clearfix">
-                <div class="goods_banner fl"><img src="{{ type.image.url }}"></div>
+                <div class="goods_banner fl">
+                    <a href="{% url 'goods:list' type.id 1 %}"><img src="{{ type.image.url }}"></a>
+                </div>
                 <ul class="goods_list fl">
                     {% for banner in type.image_banners %}
                         <li>

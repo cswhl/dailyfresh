@@ -29,6 +29,9 @@ class BaseModelAdmin(admin.ModelAdmin):
         from celery_tasks.tasks import generate_static_index_html
         generate_static_index_html.delay()
 
+        # 清除首页缓存
+        cache.delete('index_page_data')
+
 
 admin.site.register(Goods)
 admin.site.register(GoodsSKU)

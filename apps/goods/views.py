@@ -19,7 +19,6 @@ class IndexView(View):
         context = cache.get('index_page_data')
 
         if context is None:
-            print('设置缓存')
             # 获取商品的种类信息
             types = GoodsType.objects.all()
 
@@ -33,7 +32,7 @@ class IndexView(View):
             for type in types:
                 # 获取type种类首页分类商品的图片展示信息
                 image_banners = IndexTypeGoodsBanner.objects.filter(
-                    type=type, display_type=1).order_by('index')
+                    type=type, display_type=1).order_by('index')[:4]
 
                 # 获取type种类首页分离额商品的文字展示信息
                 title_banners = IndexTypeGoodsBanner.objects.filter(
@@ -51,6 +50,7 @@ class IndexView(View):
 
         # 从redis中获取购物车信息
         user = request.user
+        cart_count = 0
         if user.is_authenticated():
             # 用户已经登录
             conn = get_redis_connection('default')

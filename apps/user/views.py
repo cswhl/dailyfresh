@@ -125,11 +125,8 @@ class LoginView(View):
         if not all([username, password]):
             return render(request, 'login.html', {'errmsg': '数据不完整'})
 
-        print(username, password)
-
         # 业务处理:登录校验
         user = authenticate(username=username, password=password)
-        print(user)
         if user:
             if user.is_active:
                 login(request, user)
