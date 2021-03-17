@@ -1,15 +1,15 @@
 {% extends 'base_detail_list.html' %}
 {% block title %}天天生鲜-商品搜索结果列表{% endblock title %}
 {% block main_content %}
-	<div class="breadcrumb">
-		<a href="#">{{ query }}</a>
-		<span>></span>
-		<a href="#">搜索结果如下:</a>
-	</div>
+    <div class="breadcrumb">
+        <a href="#">{{ query }}</a>
+        <span>></span>
+        <a href="#">搜索结果如下:</a>
+    </div>
 
-	<div class="main_wrap clearfix">
+    <div class="main_wrap clearfix">
         <ul class="goods_type_list clearfix">
-            {% for item in page %}
+            {% for item in page_obj %}
             <li>
                 <a href="{% url 'goods:detail' item.object.id %}"><img src="{{ item.object.image.url }}"></a>
                 <h4><a href="{% url 'goods:detail' item.object.id %}">{{ item.object.name }}</a></h4>
@@ -22,19 +22,19 @@
             {% endfor %}
         </ul>
         <div class="pagenation">
-                {% if page.has_previous %}
-				<a href="/search?q={{ query }}&page={{ page.previous_page_number }}"><上一页</a>
+                {% if page_obj.has_previous %}
+                <a href="/search?q={{ query }}&page={{ page_obj.previous_page_number }}"><上一页</a>
                 {% endif %}
                 {% for pindex in paginator.page_range %}
-                    {% if pindex == page.number %}
-				        <a href="/search?q={{ query }}&page={{ pindex }}" class="active">{{ pindex }}</a>
+                    {% if pindex == page_obj.number %}
+                        <a href="/search?q={{ query }}&page={{ pindex }}" class="active">{{ pindex }}</a>
                     {% else %}
-				        <a href="/search?q={{ query }}&page={{ pindex }}">{{ pindex }}</a>
+                        <a href="/search?q={{ query }}&page={{ pindex }}">{{ pindex }}</a>
                     {% endif %}
-				{% endfor %}
+                {% endfor %}
                 {% if spage.has_next %}
-				<a href="/search?q={{ query }}&page={{ page.next_page_number }}">下一页></a>
+                <a href="/search?q={{ query }}&page={{ page_obj.next_page_number }}">下一页></a>
                 {% endif %}
-			</div>
-	</div>
+            </div>
+    </div>
 {% endblock main_content %}

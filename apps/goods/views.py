@@ -162,19 +162,21 @@ class ListView(View):
     # 4.其他情况，显示当前页的前2页，当前页，当前页的后2页
         num_pages = paginator.num_pages
         if num_pages < 5:
-            pages = range(1, num_pages+1)
+            pages = range(1, num_pages + 1)
         elif page <= 3:
             pages = range(1, 6)
         elif num_pages - page <= 2:
-            pages = range(num_pages-4, num_pages+1)
+            pages = range(num_pages - 4, num_pages + 1)
         else:
-            pages = range(page-2, page+3)
+            pages = range(page - 2, page + 3)
 
         # 获取该类商品的新品
-        new_skus = GoodsSKU.objects.filter(type=type).order_by('-update_time')[:5]
+        new_skus = GoodsSKU.objects.filter(
+            type=type).order_by('-update_time')[:5]
 
         # 获取购物车
         user = request.user
+        cart_count = 0
         if user.is_authenticated():
             conn = get_redis_connection('default')
             cart_count = conn.hlen(f'cart_{user.id}')
@@ -190,3 +192,26 @@ class ListView(View):
 
         # 渲染模板，返回
         return render(request, 'list.html', context)
+
+
+# /search?/q=查询字符串
+from haystack.generic_views import SearchView
+class MySearchView(SearchView):
+    """My custom search view."""
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+
+        # 获取购物车
+        user = self.request.user
+        cart_count = 0
+        if user.is_authenticated():
+            conn = get_redis_connection('default')
+            cart_count = conn.hlen(f'cart_{user.id}')
+
+        # 获取商品种类
+        types = GoodsType.objects.all()
+
+        context.update(cart_count=cart_count, types=types)
+
+        return context
