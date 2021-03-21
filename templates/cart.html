@@ -26,7 +26,7 @@
             <li class="col06">
                 <div class="num_add">
                     <a href="javascript:;" class="add fl">+</a>
-                    <input type="text" class="num_show fl" value="{{ sku.count }}">
+                    <input type="text" sku_id="{{ sku.id }} "class="num_show fl" value="{{ sku.count }}">
                     <a href="javascript:;" class="minus fl">-</a>
                 </div>
             </li>
@@ -37,6 +37,7 @@
 
 
     <ul class="settlements">
+        {% csrf_token %}
         <li class="col01"><input type="checkbox" name="" checked=""></li>
         <li class="col02">全选</li>
         <li class="col03">合计(不含运费)：<span>¥</span><em>{{ total_price }}</em><br>共计<b>{{ total_count }}</b>件商品</li>
@@ -76,6 +77,58 @@
             update_page_info()
         })
 
-        // 商品勾选
+        // 商品勾选与不选
+        $(".cart_list_td").find(":checkbox").change(function(){
+            all_length = $(".cart_list_td").length
+            checked_length = $(".cart_list_td").find(":checked").length
+            is_checked = true
+            if(checked_length < all_length) {
+                is_checked = false
+            }
+            $(".settlements").find(":checkbox").prop("checked", is_checked)
+
+            update_page_info()
+        })
+
+        // 增加商品数量
+        $(".add").click(function(){
+            // 获取数据
+            sku_id = $(this).next().attr('sku_id').trim()
+            count = $(this).next().val()
+            csrf_token = $("input[name='csrfmiddlewaretoken']").val()
+            count = parseInt(count) + 1
+
+            // 组织数据
+            params = {'sku_id': sku_id, 'count': count, 'csrfmiddlewaretoken': csrf_token}
+
+            // AXJX post请求
+            error_update = false
+            $.post('/cart/update', params, function(data){
+                if (data.res == 5){
+                    // 更新成功
+                    error_update = false
+                }
+                else{
+                    // 更新失败
+                    error_update = true
+                    alert(data.errmsg)
+                }
+            })
+
+            if (error_update == false) {
+                $(this).next().val(count)
+                // 获取商品的小计
+                price = $(this).parents("ul").children(".col05").text()
+                alert(price)
+            }
+
+        })
+
+        // 减少商品数量
+        $(".minus").click(function(){
+            count = $(this).prev().val()
+            count = parseInt(count) - 1
+            $(this).prev().val(count)
+        })
     </script>
 {% endblock bottomfiles %}

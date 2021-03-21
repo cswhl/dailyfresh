@@ -7,10 +7,19 @@
     </head>
 
     <body>
-        <input type='checkbox' checked>
-        <script type='text/javascript'>
-            res = $(':checkbox').prop('checked')
-            alert(res)
+        <div id="target">
+          Click here
+        </div>
+        <div id="other">
+          Trigger the handler
+        </div>
+        <script>
+            $( "#target"  ).click(25,function() {
+                  alert( "Handler for .click() called."  );
+            });
+            $( "#other"  ).click(function() {
+                  $("#target").click();
+            });
         </script>
     </body>
 </html>

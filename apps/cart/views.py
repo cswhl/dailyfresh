@@ -100,3 +100,49 @@ class CartInfoView(LoginRequiredMixin, View):
 
         # 返回
         return render(request, 'cart.html', context)
+
+# /cart/update
+class CartUpdateView(View):
+    '''购物车更新'''
+
+    def post(self, request):
+        '''更新购物车数据'''
+
+        # 判断商品库存量
+        # 1.判断用户是否登录
+        user = request.user
+        if not user.is_authenticated():
+            return JsonResponse({'res': 0, 'errmsg': '用户没有登录'})
+
+        # 2.获取商品id和数量
+        sku_id = request.POST.get('sku_id')
+        count = request.POST.get('count')
+        print(sku_id)
+
+        # 3.判断数据是否完整
+        if not all([sku_id, count]):
+            return JsonResponse({'res': 1, 'errmsg': '数据不完整'})
+
+        # 4.检验添加的商品数量
+        try:
+            count = int(count)
+        except Exception:
+            return JsonResponse({'res': 2, 'errmsg': '商品数目出错'})
+
+        # 4.查询数据库:该商品id是否存在
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id)
+        except GoodsSKU.DoesNotExist:
+            return JsonResponse({'res': 3, 'errmsg': '商品不存在'})
+
+        # 6.校验商品的库存
+        if count > sku.stock:
+            return JsonResponse({'res': 4, 'errmsg': '库存不足'})
+
+        # 业务处理
+        conn = get_redis_connection('default')
+        cart_key = f'cart_{user.id}'
+        conn.hset(cart_key, sku_id, count)
+
+        # 返回
+        return JsonResponse({'res': 5, 'errmsg': '添加成功'})
