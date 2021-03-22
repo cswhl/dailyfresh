@@ -8,7 +8,7 @@
     <div class="breadcrumb">
         <a href="#">全部分类</a>
         <span>></span>
-        <a href="#">新鲜水果</a>
+        <a href="{% url 'goods:list' sku.type.id 1 %}">{{ sku.type.name }}</a>
         <span>></span>
         <a href="#">商品详情</a>
     </div>
@@ -55,8 +55,8 @@
                 <ul>
                     {% for sku in new_skus %}
                         <li>
-                            <a href="{% url 'sku:detail' sku.id }"><img src="{{ sku.image.url }}"></a>
-                            <h4><a href="{% url 'sku:detail' sku.id }">{{ sku.name }}</a></h4>
+                            <a href="{% url 'goods:detail' sku.id %}"><img src="{{ sku.image.url }}"></a>
+                            <h4><a href="{% url 'goods:detail' sku.id %}">{{ sku.name }}</a></h4>
                             <div class="prize">￥{{ sku.price }}</div>
                         </li>
                     {% endfor %}

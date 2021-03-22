@@ -9,8 +9,6 @@ from django_redis import get_redis_connection
 
 # 类视图不能继承LoginRequiredMixin,因为AXJX请求都在后台运行，在浏览器中不能看到效果(即不会跳显示登录页面)
 # /cart/add
-
-
 class CartAddView(View):
     '''购物车记录添加'''
 
@@ -64,8 +62,6 @@ class CartAddView(View):
                              'errmsg': '添加成功'})
 
 # /cart/
-
-
 class CartInfoView(LoginRequiredMixin, View):
     '''购物车'''
 
@@ -102,6 +98,8 @@ class CartInfoView(LoginRequiredMixin, View):
         return render(request, 'cart.html', context)
 
 # /cart/update
+
+
 class CartUpdateView(View):
     '''购物车更新'''
 
@@ -144,5 +142,48 @@ class CartUpdateView(View):
         cart_key = f'cart_{user.id}'
         conn.hset(cart_key, sku_id, count)
 
+        # 计算用户购物车中商品的总量
+        total_count = 0
+        for count in conn.hvals(cart_key):
+            total_count += int(count)
+
         # 返回
-        return JsonResponse({'res': 5, 'errmsg': '添加成功'})
+        return JsonResponse({'res': 5, 'total_count': total_count, 'errmsg': '添加成功'})
+
+# /cart/delete
+class CartDeleteView(View):
+    '''购物车删除'''
+
+    def post(self, request):
+        '''删除购物车商品'''
+
+        # 用户登录判断
+        user = request.user
+        if not user.is_authenticated():
+            return JsonResponse({'res': 0, 'errmsg': '用户没有登录'})
+
+        # 获取商品id
+        sku_id = request.POST.get('sku_id')
+
+        # 商品id合理性判断
+        if not sku_id:
+            return JsonResponse({'res': 1, 'errmsg': '无效商品id'})
+
+        # 商品存在判断
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id)
+        except GoodsSKU.DoesNotexist:
+            return JsonResponse({'res': 2, 'errmsg': '商品不存在'})
+
+        # 业务处理
+        conn = get_redis_connection('default')
+        cart_key = f'cart_{user.id}'
+        conn.hdel(cart_key, sku_id)
+
+        # 计算用户购物车中商品的总量
+        total_count = 0
+        for count in conn.hvals(cart_key):
+            total_count += int(count)
+
+        # 返回
+        return JsonResponse({'res': 3, 'total_count': total_count, 'errmsg': '添加成功'})
