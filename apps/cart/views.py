@@ -18,7 +18,6 @@ class CartAddView(View):
         # 1.判断用户是否登录
         user = request.user
         if not user.is_authenticated():
-            print(user)
             return JsonResponse({'res': 0, 'errmsg': '用户没有登录'})
 
         # 2.获取商品id和数量
