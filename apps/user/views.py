@@ -176,9 +176,12 @@ class UserInfoView(LoginRequiredMixin, View):
         # 按浏览记录顺序获取商品
         goods_list = []
         for id in sku_ids:
-            goods = GoodsSKU.objects.get(id=id)
-            goods_list.append(goods)
+            try:
+                goods = GoodsSKU.objects.get(id=id)
+            except GoodsSKU.DoesNotExist:
+                pass
 
+            goods_list.append(goods)
 
         return render(request, 'user_center_info.html', {'address':address, 'goods_list':goods_list})
 
