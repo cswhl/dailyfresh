@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 from django.conf import settings
 from django_redis import get_redis_connection
 from user.models import User, Address
 from goods.models import GoodsSKU
+from order.models import OrderInfo, OrderGoods
 from celery_tasks.tasks import send_register_active_email
 from utils.mixin import LoginRequiredMixin
 
@@ -183,26 +185,72 @@ class UserInfoView(LoginRequiredMixin, View):
 
             goods_list.append(goods)
 
-        return render(request, 'user_center_info.html', {'address':address, 'goods_list':goods_list})
+        context = {'page': 'info', 'address': address, 'goods_list': goods_list}
+        return render(request, 'user_center_info.html', context)
 
 
 # /user/order
 class UserOrderView(LoginRequiredMixin, View):
     '''用户中心-订单页'''
 
-    def get(self, request):
-        return render(request, 'user_center_order.html')
+    def get(self, request, page):
+        '''订单显示页'''
+
+        #  获取用户
+        user = request.user
+
+        # 获取用户的订单信息, 遍历所有订单
+        orders = OrderInfo.objects.filter(user=user).order_by('-create_time')
+        # 获取当前用户订单商品
+        for order in orders:
+            order_skus = OrderGoods.objects.filter(order=order)
+
+            for order_sku in order_skus:
+                # 商品小计
+                amount = order_sku.price * int(order_sku.count)
+                order_sku.amount = amount # 订单商品动态增加属性
+
+            order.order_skus = order_skus # 订单动态增加属性
+
+            # 动态增加订单状态字符串
+            status_name = OrderInfo.ORDER_STATUS[order.order_status]
+            order.status_name = status_name
+
+
+        # 订单信息分页
+        paginator = Paginator(orders, 1)
+
+        # 获取当前页
+        order_page = paginator.page(page)
+
+        # 控制页码显示
+        num_pages = paginator.num_pages
+        if num_pages < 5:
+            pages = range(1, num_pages+1)
+        elif page <= 3:
+            pages = range(1, 6)
+        elif num_pages - page <= 2:
+            pages = range(num_pages-4, num_pages+1)
+        else:
+            pages = range(page-2, page+3)
+
+        # 组织上下文
+        context = {'page': 'order',
+                   'order_page': order_page,
+                   'pages': pages,}
+
+        # 使用模板
+        return render(request, 'user_center_order.html', context)
 
 # /user/address
-
-
 class UserAddressView(LoginRequiredMixin, View):
     '''用户中心-地址页'''
 
     def get(self, request):
         # 获取登录用户的默认收货地址
         address = Address.objects.get_default_address(user=request.user)
-        return render(request, 'user_center_site.html', {'address':address})
+        context = {'page': 'address', 'address': address}
+        return render(request, 'user_center_site.html', context)
 
     def post(self, request):
 

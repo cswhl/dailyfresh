@@ -9,6 +9,6 @@ urlpatterns = [
     url(r'^logout$', LogoutView.as_view(), name='logout'), # 注销登录
 
     url(r'^$', UserInfoView.as_view(), name='user'), # 用户中心信息页
-    url(r'^order$', UserOrderView.as_view(), name='order'), # 用户中心订单页
+    url(r'^order/(?P<page>\d+)$', UserOrderView.as_view(), name='order'), # 用户中心订单页
     url(r'^address$', UserAddressView.as_view(), name='address'), #用户中心地址页
 ]
