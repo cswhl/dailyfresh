@@ -18,8 +18,6 @@ import re
 # Create your views here.
 
 # /user/register
-
-
 class RegisterView(View):
     '''注册'''
 
@@ -221,6 +219,7 @@ class UserOrderView(LoginRequiredMixin, View):
         paginator = Paginator(orders, 1)
 
         # 获取当前页
+        page = int(page)
         order_page = paginator.page(page)
 
         # 控制页码显示
