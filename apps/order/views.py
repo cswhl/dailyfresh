@@ -206,8 +206,6 @@ class OrderPayView(View):
         if not order_id:
             return JsonResponse({'res': 1, 'errmsg': '无效订单'})
 
-        print(order_id)
-        print(user)
         try:
             order = OrderInfo.objects.get(order_id=order_id,
                                           user = user,
@@ -308,3 +306,73 @@ class OrderCheckView(View):
                 continue
             else:
                 return JsonResponse({'res': 4, 'errmsg': '订单支付失败'})
+
+# /order/comment/order_id
+class OrderCommentView(LoginRequiredMixin, View):
+    '''订单评论'''
+
+    def get(self, request, order_id):
+        '''订单页显示'''
+
+        user = request.user
+        # 校验数据
+        if not order_id:
+            return redirect(reverse('user:order'))
+
+        try:
+            order = OrderInfo.objects.get(order_id = order_id, user=user)
+        except OrderInfo.DoesNotExist:
+            return redirect(reverse('user:order'))
+
+        # 更新订单状态标题
+        order.status_name = OrderInfo.ORDER_STATUS.get(order.order_status)
+
+        # 获取订单的商品信息
+        order_skus = OrderGoods.objects.filter(order=order)
+        for order_sku in order_skus:
+            amount = order_sku.count * order_sku.price
+            order_sku.amount = amount
+
+        # 动态增加订单属性
+        order.order_skus = order_skus
+
+        # 组织上下文
+        context = {'order': order}
+        # 返回数据
+        return render(request, "order_comment.html", context)
+
+    def post(self, request, order_id):
+        '''提交评论'''
+
+        user = request.user
+
+        # 校验数据
+        if not order_id:
+            return redirect(reverse('user:order'))
+
+        try:
+            order = OrderInfo.objects.get(order_id = order_id, user=user)
+        except OrderInfo.DoesNotExist:
+            return redirect(reverse('user:order'))
+
+        # 获取评价内容
+        total_count = request.POST.get("total_count")
+        total_count = int(total_count)
+
+        for i in  range(1, total_count+1):
+            sku_id = request.POST.get("sku_%d" % i)
+            comment = request.POST.get("comment_%d" % i)
+            try:
+                order_sku = OrderGoods.objects.get(order=order, sku_id=sku_id)
+            except OrderGoods.DoesNotExits:
+                continue
+
+            # 更新保存订单商品评价
+            order_sku.comment = comment
+            order_sku.save()
+
+        order.order_status = 5
+        order.save()
+
+        # 返回数据
+        return redirect(reverse('user:order', kwargs={'page': 1}))

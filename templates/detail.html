@@ -80,8 +80,8 @@
             <div class="tab_content">
                 {% for order in sku_orders %}
                     <dl>
-                        <dt>评论时间:{{ order.update_time }}&nbsp;&nasp; 用户名:{{ order.order.user.username }}</dt>
-                        <dd>{{ order.comment }}</dd>
+                        <dt>评论时间:{{ order.update_time }} 用户名:{{ order.order.user.username }}</dt>
+                        <dd>评论内容:{{ order.comment }}</dd>
                     </dl>
                 {% endfor %}
             </div>
