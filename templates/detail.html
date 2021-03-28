@@ -66,21 +66,21 @@
 
         <div class="r_wrap fr clearfix">
             <ul class="detail_tab clearfix">
-                <li class="active">商品介绍</li>
-                <li>评论</li>
+                <li class="active" id="tag_detail">商品介绍</li>
+                <li id="tag_comment">评论</li>
             </ul>
 
-            <div class="tab_content">
+             <div class="tab_content" id="tab_detail">
                 <dl>
                     <dt>商品详情：</dt>
-                    <dd>{{ sku.goods.detial|safe }}</dd>
+                    <dd>{{ sku.goods.detail|safe }}</dd>
                 </dl>
             </div>
 
-            <div class="tab_content">
+            <div class="tab_content" id="tab_comment" style="display:none">
                 {% for order in sku_orders %}
                     <dl>
-                        <dt>评论时间:{{ order.update_time }} 用户名:{{ order.order.user.username }}</dt>
+                        <dt>评论时间:{{ order.update_time }} &nbsp&nbsp&nbsp&nbsp 用户名:{{ order.order.user.username }}</dt>
                         <dd>评论内容:{{ order.comment }}</dd>
                     </dl>
                 {% endfor %}
@@ -97,8 +97,23 @@
 {% block bottomfiles %}
     <script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
     <script type="text/javascript">
-        update_goods_amout()
+        // 处理商品介绍和评论
+        $("#tag_detail").click(function(){
+            $("#tag_comment").removeClass("active")
+            $("#tab_comment").hide()
+            $(this).addClass("active")
+            $("#tab_detail").show()
+        })
+
+        $("#tag_comment").click(function(){
+            $("#tag_detail").removeClass("active")
+            $("#tab_detail").hide()
+            $(this).addClass("active")
+            $("#tab_comment").show()
+        })
+
         //增加商品数量
+        update_goods_amout()
         $(".add").click(function(){
             num = $(".num_show").val()
             num = parseInt(num)
